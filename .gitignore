@@ -1,0 +1,3 @@
+.phpcd
+vendor
+composer.lock

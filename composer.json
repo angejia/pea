@@ -1,0 +1,19 @@
+{
+    "name": "lvht/pea",
+    "description": "Eloquent Cache Layer",
+    "license": "MIT",
+    "authors": [
+        {
+            "name": "吕海涛",
+            "email": "git@lvht.net"
+        }
+    ],
+    "autoload": {
+        "psr-4": {
+            "Lvht\\Pea\\": "src"
+        }
+    },
+    "require": {
+        "illuminate/database": "^5.1"
+    }
+}
