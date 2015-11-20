@@ -27,7 +27,8 @@ abstract class Model extends EloquentModel
 
         $grammar = $conn->getQueryGrammar();
 
-        $queryBuilder = new QueryBuilder($conn, $grammar, $conn->getPostProcessor());
+        $queryBuilder = new QueryBuilder(
+            $conn, $grammar, $conn->getPostProcessor());
         $queryBuilder->setModel($this);
 
         return $queryBuilder;
