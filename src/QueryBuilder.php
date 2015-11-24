@@ -307,7 +307,7 @@ class QueryBuilder extends Builder
     {
         $meta = $this->getMeta();
         $parts = [
-            $meta->prefix($this->db(), $this->model->table()),
+            $meta->prefix($this->db(), $this->model->table(), true),
             $sql,
             json_encode($bindings),
         ];
