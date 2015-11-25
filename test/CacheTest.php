@@ -12,14 +12,16 @@ class CacheTest extends TestCase
         $redis->shouldReceive('mget')->with([
             'a',
             'b',
+            'c',
         ])->andReturn([
             1,
             "null",
+            '[]',
         ]);
 
         $cache = new RedisCache($redis);
-        $result = $cache->get(['a', 'b']);
-        $this->assertEquals([ 'a' => 1 ], $result);
+        $result = $cache->get(['a', 'b', 'c']);
+        $this->assertEquals([ 'a' => 1 , 'c' => [] ], $result);
     }
 
     public function testSet()
@@ -27,12 +29,14 @@ class CacheTest extends TestCase
         $redis = M::mock(Redis::class);
         $redis->shouldReceive('mset')->with([
             'a' => '[1,2]',
+            'c' => '[]',
         ]);
 
         $cache = new RedisCache($redis);
         $cache->set([
             'a' => [1, 2],
             'b' => null,
+            'c' => [],
         ]);
     }
 
