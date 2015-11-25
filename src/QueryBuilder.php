@@ -158,7 +158,7 @@ class QueryBuilder extends Builder
 
         $toCachRows = [];
         foreach ($missedRows as $row) {
-            $toCachRows[$this->buildRowCacheKey($row->$primaryKeyName)] = $row;
+            $toCachRows[$cacheKeys[$row->$primaryKeyName]] = $row;
         }
         if ($toCachRows) {
             $cache->set($toCachRows);
@@ -176,10 +176,7 @@ class QueryBuilder extends Builder
             $ids = [$where['value']];
         }
 
-        $cacheKeys = [];
-        foreach ($ids as $id) {
-            $cacheKeys[$id] = $this->buildRowCacheKey($id);
-        }
+        $cacheKeys = $this->buildRowCacheKey($ids);
 
         return $cacheKeys;
     }
@@ -243,12 +240,15 @@ class QueryBuilder extends Builder
     {
         $keyName = $this->model->primaryKey();
         $toDeleteRows = parent::get();
-        $cacheKeys = array_map(function ($row) use ($keyName) {
-            return $this->buildRowCacheKey($row->$keyName);
-        }, $toDeleteRows);
-
-        $cache = $this->getCache();
-        $cache->del($cacheKeys);
+        $ids = [];
+        foreach ($toDeleteRows as $row) {
+            $ids[] = $row->$keyName;
+        }
+        if ($ids) {
+            $cacheKeys = $this->buildRowCacheKey($ids);
+            $cache = $this->getCache();
+            $cache->del(array_values($cacheKeys));
+        }
     }
 
     public function update(array $values)
@@ -296,15 +296,17 @@ class QueryBuilder extends Builder
     /**
      * 构造行级缓存索引
      */
-    private function buildRowCacheKey($keyValue)
+    private function buildRowCacheKey($keyValues)
     {
         $meta = $this->getMeta();
-        $parts = [
-            $meta->prefix($this->db(), $this->model->table()),
-            $keyValue,
-        ];
+        $prefix = $meta->prefix($this->db(), $this->model->table());
 
-        return md5(implode(':', $parts));
+        $keys = [];
+        foreach ($keyValues as $keyValue) {
+            $keys[$keyValue] = md5($prefix . ':' . $keyValue);
+        }
+
+        return $keys;
     }
 
     /**
