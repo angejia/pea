@@ -1,61 +1,31 @@
-## 名词
+# pea
 
-- `SQL`查询分类：
-  - **简单查询**：只使用主键过滤结果集的查询
-  - **普通查询**：使用其他`where`条件过滤结果集的查询
-  - **复杂查询**：包含`group by`、`join`和子查询的查询
-- 缓存分类：
-  - **表级缓存**：根据表名和版本读写缓存内容
-  - **行级缓存**：根据主键值读写缓存内容
-- 表版本：更新表内容的时候`+1`
-- 表结构版本：更新表结构的时候`+1`
-- `SQL`一致性唯一标识：`SQL` + 绑定数据序列化摘要
+Laravel Eloquent 的缓存层。
 
-## 策略
+## 特色
 
-- **简单查询**使用**行级缓存**
-- **普通查询**转化成**简单查询**，进而使用**行级缓存**
-- **复杂查询**使用**表级查询**
+- 行级缓存
+- 表级缓存
+- 自动过期
 
-## 过程
+更多细节参考[wiki](../../wiki)。
 
-### 增／删／改
-完成之后更新**表版本**。
+## 安装
 
-删除和更新查询在执行**之前**需要实现获取受影响的主键，并批量过期相**关行缓存**，然后执行**原**查询。
-
-### 查
-
-- 简单查询
-  1. 根据主键获取缓存
-  2. 使用未命中的主键查询数据库，将获取的结果写入缓存
-  3. 将两部分结果合并返回
-- 普通查询
-  1. 查询数据库，只获取主键列表（此步亦可缓存）
-  2. 使用主键列表进行**简单查询**，并将结果返回
-- 复杂查询
-  1. 构造查询**一致性唯一标识**
-  2. 使用唯一标识读取缓存。
-  3. 命中则将结果返回；未命中则查询数据库，将结果写入缓存，最后将结果返回
-
-## 缓存 Key
-
-缓存的键结构如下：
 ```
-# 表级缓存
-{db}.{table}.{struct_version}.{version}.{sql_id}
-# 行级缓存
-{db}.{table}.{struct_version}.{pk_id}
+composer require angejia/pea:dev-master
 ```
 
-其中：
-- db：表示数据库名
-- table：表示表名
-- struct_version:标识**表结构版本**
-- version：表示**表版本**
-- sql_id: 表示**一致性唯一标识**
-- pk_id：标识主键值
+## 使用
 
-## Migration
+在`config/app.php`中添加`Angejia\Pea\ServiceProvider`，然后使用`Angejia\Pea\Model`替换`Illuminate\Database\Eloquent\Model`。 最后在模型中设置`protected`属性`$needCache`为`true`即可开启缓存支持。
 
-运行`migration`之后更新struct_version，过期所有缓存。
+```php
+class UserModel extends \Angejia\Pea\Model
+{
+    protected $needCache = true;
+}
+```
+
+---
+[安个家](http://www.angejia.com/)出品。
