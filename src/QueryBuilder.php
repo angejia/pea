@@ -10,6 +10,11 @@ class QueryBuilder extends Builder
      */
     private $model;
 
+    private function needCache()
+    {
+        return $this->model->needCache();
+    }
+
     public function setModel(Model $model)
     {
         $this->model = $model;
@@ -33,7 +38,7 @@ class QueryBuilder extends Builder
 
     public function get($columns = ['*'])
     {
-        if (!$this->model->needCache())
+        if (!$this->needCache())
         {
             return parent::get($columns);
         }
@@ -224,7 +229,7 @@ class QueryBuilder extends Builder
 
     public function delete($id = null)
     {
-        if ($this->model->needCache()) {
+        if ($this->needCache()) {
             // 清空表级缓存
             $meta = $this->getMeta();
             $meta->flush($this->db(), $this->model->table());
@@ -254,7 +259,7 @@ class QueryBuilder extends Builder
 
     public function update(array $values)
     {
-        if ($this->model->needCache()) {
+        if ($this->needCache()) {
             // 清空表级缓存
             $meta = $this->getMeta();
             $meta->flush($this->db(), $this->model->table());
@@ -266,7 +271,7 @@ class QueryBuilder extends Builder
 
     public function insert(array $values)
     {
-        if ($this->model->needCache()) {
+        if ($this->needCache()) {
             // 清空表级缓存
             $meta = $this->getMeta();
             $meta->flush($this->db(), $this->model->table());
@@ -277,7 +282,7 @@ class QueryBuilder extends Builder
 
     public function insertGetId(array $values, $sequence = null)
     {
-        if ($this->model->needCache()) {
+        if ($this->needCache()) {
             // 清空表级缓存
             $meta = $this->getMeta();
             $meta->flush($this->db(), $this->model->table());
