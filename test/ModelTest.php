@@ -377,6 +377,33 @@ class ModelTest extends TestCase
         $user0 = $users[0];
         $this->assertEquals(1, $user0->id);
     }
+
+    /**
+     * 普通查询，空结果集
+     */
+    public function testEmptyNormalGet()
+    {
+        // 模拟获取主键列表，返回空结果
+        $this->conn->shouldReceive('select')
+            ->with('select * from "user" where "status" = ? limit 2 offset 1', [1], true)
+            ->andReturn([]);
+
+        // 查询完成后需要将数据写入缓存
+        $this->cache->shouldReceive('set')
+            ->with([
+                'b7f40265619c7ef9fc80ff41bee68632' => [],
+            ]);
+
+        // 模拟未命中表级缓存
+        $this->cache->shouldReceive('get')
+            ->with([
+                'b7f40265619c7ef9fc80ff41bee68632',
+            ])
+            ->andReturn([]);
+
+        $users = User::where('status', 1)->take(2)->skip(1)->get();
+        $this->assertEquals(0, count($users));
+    }
 }
 
 class User extends Model

@@ -101,6 +101,12 @@ class QueryBuilder extends Builder
         $ids = array_map(function ($row) use($primaryKeyName) {
             return $row->$primaryKeyName;
         }, $rows);
+
+        // 没查到结果则直接返回空数组
+        if (!$ids) {
+            return [];
+        }
+
         // 根据主键查询结果
         $this->wheres = [];
         $this->limit = null;
