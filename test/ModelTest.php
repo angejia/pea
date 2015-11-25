@@ -274,6 +274,82 @@ class ModelTest extends TestCase
             ]);
         $uers = User::where('status', 1)->orderBy('id', 'desc')->get();
     }
+
+    /**
+     * 普通查询，全部命中缓存
+     */
+    public function testAllCachedNormalGet()
+    {
+        // 模拟命中主键 1 和 2，通过表级缓存返回
+        $this->cache->shouldReceive('get')
+            ->with([
+                'b7f40265619c7ef9fc80ff41bee68632',
+            ])
+            ->andReturn([
+                'b7f40265619c7ef9fc80ff41bee68632' => [
+                    (object) [ 'id' => 1, ],
+                    (object) [ 'id' => 2, ],
+                ]
+            ]);
+
+        $this->cache->shouldReceive('get')
+            ->with([
+                '3558193cd9818af7fe4d2c2f5bd9d00f',
+                '343a10e6c2480e111dd3e9e564eb7966',
+            ])
+            // 缓存中只有 id 为 1 的数据
+            ->andReturn([
+                '3558193cd9818af7fe4d2c2f5bd9d00f' => (object) [ 'id' => 1, 'name' => '海涛', ],
+                '343a10e6c2480e111dd3e9e564eb7966' => (object) [ 'id' => 2, 'name' => '涛涛', ],
+            ]);
+
+        $users = User::where('status', 1)->take(2)->skip(1)->get();
+        $user0 = $users[0];
+        $this->assertEquals(1, $user0->id);
+    }
+
+    /**
+     * 普通查询，部分命中缓存
+     */
+    public function testPartialCachedNormalGet()
+    {
+        $this->conn->shouldReceive('select')
+            ->andReturn([
+                (object) [ 'id' => 2, 'name' => '涛涛', ],
+            ]);
+
+        // 查询完成后需要将数据写入缓存
+        $this->cache->shouldReceive('set')
+            ->with([
+                '343a10e6c2480e111dd3e9e564eb7966' => (object) [ 'id' => 2, 'name' => '涛涛', ],
+            ]);
+
+        // 模拟命中主键 1 和 2，通过表级缓存返回
+        $this->cache->shouldReceive('get')
+            ->with([
+                'b7f40265619c7ef9fc80ff41bee68632',
+            ])
+            ->andReturn([
+                'b7f40265619c7ef9fc80ff41bee68632' => [
+                    (object) [ 'id' => 1, ],
+                    (object) [ 'id' => 2, ],
+                ]
+            ]);
+
+        $this->cache->shouldReceive('get')
+            ->with([
+                '3558193cd9818af7fe4d2c2f5bd9d00f',
+                '343a10e6c2480e111dd3e9e564eb7966',
+            ])
+            // 缓存中只有 id 为 1 的数据
+            ->andReturn([
+                '3558193cd9818af7fe4d2c2f5bd9d00f' => (object) [ 'id' => 1, 'name' => '海涛', ],
+            ]);
+
+        $users = User::where('status', 1)->take(2)->skip(1)->get();
+        $user0 = $users[0];
+        $this->assertEquals(1, $user0->id);
+    }
 }
 
 class User extends Model
