@@ -39,6 +39,11 @@ class ModelTest extends TestCase
             ->with('angejia', 'user')
             // 缓存 key 前缀全部使用空字符串 ''
             ->andReturn('');
+        $meta->shouldReceive('prefix')
+            // 查找 angejia.user 表主键缓存 key 前缀
+            ->with('angejia', 'user', true)
+            // 缓存 key 前缀全部使用空字符串 ''
+            ->andReturn('');
         $this->meta = $meta;
 
         // 模拟 Cache 服务
@@ -140,14 +145,83 @@ class ModelTest extends TestCase
 
     public function testFlushCacheForInsert()
     {
+        $pdo = M::mock('\PDO');
+        // 模拟数据库返回自增主键 ID
+        $pdo->shouldReceive('lastInsertId')->andReturn(1);
+        $this->conn->shouldReceive('getPdo')->andReturn($pdo);
+        $this->conn->shouldReceive('insert');
+
+        // 模拟刷新表级缓存
+        $this->meta->shouldReceive('flush')->with('angejia', 'user');
+
+        $user = new User;
+        $user->name = '海涛';
+        $user->save();
+        $this->assertEquals(1, $user->id);
     }
 
-    public function testFlushCacheForUpdate()
+    public function testFlushCacheForUpdateOne()
     {
+        // 模拟数据库更新操作
+        $this->conn->shouldReceive('update');
+        // 模拟刷新表级缓存
+        $this->meta->shouldReceive('flush')->with('angejia', 'user');
+        // 模拟刷新行级缓存
+        $this->cache->shouldReceive('del')
+            ->with(['3558193cd9818af7fe4d2c2f5bd9d00f']);
+
+        $this->cache->shouldReceive('get')
+            // 查询 id 为 1 的缓存
+            ->with([
+                '3558193cd9818af7fe4d2c2f5bd9d00f',
+            ])
+            // 模拟全部命中缓存
+            ->andReturn([
+                '3558193cd9818af7fe4d2c2f5bd9d00f' => (object) [ 'id' => 1, 'name' => '海涛', ],
+            ]);
+
+        // 模拟返回受到影响的数据，用于清理缓存
+        $this->conn->shouldReceive('select')
+            ->andReturn([
+                (object) [ 'id' => 1, 'name' => '海涛', ],
+            ]);
+
+
+        $user = User::find(1);
+        $user->name = '海涛2';
+        $user->save();
     }
 
-    public function testFlushCacheForDelete()
+    public function testFlushCacheForDeleteOne()
     {
+        // 模拟数据库更新
+        $this->conn->shouldReceive('delete');
+
+        // 模拟刷新表级缓存
+        $this->meta->shouldReceive('flush')->with('angejia', 'user');
+        // 模拟刷新行级缓存
+        $this->cache->shouldReceive('del')
+            ->with(['3558193cd9818af7fe4d2c2f5bd9d00f']);
+
+        // 模拟数据库返回首次查询结果
+        $this->cache->shouldReceive('get')
+            // 查询 id 为 1 的缓存
+            ->with([
+                '3558193cd9818af7fe4d2c2f5bd9d00f',
+            ])
+            // 模拟全部命中缓存
+            ->andReturn([
+                '3558193cd9818af7fe4d2c2f5bd9d00f' => (object) [ 'id' => 1, 'name' => '海涛', ],
+            ]);
+
+        // 模拟返回受到影响的数据，用于清理缓存
+        $this->conn->shouldReceive('select')
+            ->andReturn([
+                (object) [ 'id' => 1, 'name' => '海涛', ],
+            ]);
+
+        $user = User::find(1);
+        $user->delete();
     }
 }
 
