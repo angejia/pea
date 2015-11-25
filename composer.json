@@ -1,5 +1,5 @@
 {
-    "name": "lvht/pea",
+    "name": "angejia/pea",
     "description": "Eloquent Cache Layer",
     "license": "MIT",
     "authors": [
@@ -10,12 +10,12 @@
     ],
     "autoload": {
         "psr-4": {
-            "Lvht\\Pea\\": "src"
+            "Angejia\\Pea\\": "src"
         }
     },
     "autoload-dev": {
         "psr-4": {
-            "Lvht\\Pea\\": "test"
+            "Angejia\\Pea\\": "test"
         }
     },
     "require": {

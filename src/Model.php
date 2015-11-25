@@ -1,4 +1,4 @@
-<?php namespace Lvht\Pea;
+<?php namespace Angejia\Pea;
 
 use Illuminate\Database\Eloquent\Model as EloquentModel;
 

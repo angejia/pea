@@ -1,4 +1,4 @@
-<?php namespace Lvht\Pea;
+<?php namespace Angejia\Pea;
 
 use Illuminate\Contracts\Redis\Database as Redis;
 

@@ -1,8 +1,8 @@
-<?php namespace Lvht\Pea;
+<?php namespace Angejia\Pea;
 
 use Mockery as M;
 use Illuminate\Contracts\Redis\Database as Redis;
-use Lvht\Pea\RedisCache;
+use Angejia\Pea\RedisCache;
 
 class CacheTest extends TestCase
 {
