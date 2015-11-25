@@ -47,6 +47,6 @@ class MetaTest extends TestCase
 
         $meta = new RedisMeta($redis);
         $prefix = $meta->prefix('angejia', 'user', true);
-        $this->assertEquals('pea:angejia:user:16', $prefix);
+        $this->assertEquals('pea:angejia:user:1:6', $prefix);
     }
 }

@@ -23,7 +23,7 @@ class RedisMeta implements Meta
     {
         $version = $this->getSchemaVersion($db, $table);
         if ($isForTable) {
-            $version .= $this->getUpdateVersion($db, $table);
+            $version = $version . ':' . $this->getUpdateVersion($db, $table);
         }
 
         return implode(':', [
