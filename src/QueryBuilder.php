@@ -52,9 +52,8 @@ class QueryBuilder extends Builder
         $key = $this->buildTableCacheKey($this->toSql(), $this->getBindings());
         $cache = $this->getCache();
         $result = $cache->get([$key]);
-        $result = @$result[$key];
-        if ($result) {
-            return $result;
+        if (array_key_exists($key, $result)) {
+            return $result[$key];
         }
 
         $result = parent::get($columns);
@@ -145,6 +144,7 @@ class QueryBuilder extends Builder
 
         $originWheres = $this->wheres;
         $this->wheres = [];
+        $this->bindings['where'] = [];
         $this->whereIn($primaryKeyName, $missedIds);
 
         $missedRows = parent::get($columns);
@@ -199,8 +199,9 @@ class QueryBuilder extends Builder
 
         $where = current($this->wheres);
 
-        $column = $this->model->table() . '.' . $this->model->primaryKey();
-        if ($where['column'] !== $column) {
+        $id = $this->model->primaryKey();
+        $tableId = $this->model->table() . '.' . $this->model->primaryKey();
+        if (!in_array($where['column'], [$id, $tableId])) {
             return false;
         }
 

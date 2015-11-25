@@ -90,6 +90,35 @@ class ModelTest extends TestCase
         $this->assertEquals('海涛', $u1->name);
     }
 
+    public function testOneMissedSimpleGet()
+    {
+        // 模拟数据库返回查询未命中缓存的数据
+        $this->conn->shouldReceive('select')
+            ->with('select * from "user" where "id" in (?) limit 1', [1], true)
+            ->andReturn([
+                (object) [ 'id' => 1, 'name' => '海涛', ],
+            ]);
+
+
+        // 模拟缓存查询结果
+        $this->cache->shouldReceive('set')
+            ->with([
+                '3558193cd9818af7fe4d2c2f5bd9d00f' => (object) [ 'id' => 1, 'name' => '海涛', ],
+            ]);
+        $this->cache->shouldReceive('get')
+            // 查询 id 为 1 的缓存
+            ->with([
+                '3558193cd9818af7fe4d2c2f5bd9d00f',
+            ])
+            // 模拟全部没有命中缓存
+            ->andReturn([]);
+
+        // 查询 id 为 1 的记录，应该命中缓存
+        $u1 = User::find(1);
+
+        $this->assertEquals('海涛', $u1->name);
+    }
+
     public function testAllCachedSimpleGet()
     {
         $this->cache->shouldReceive('get')
@@ -127,6 +156,7 @@ class ModelTest extends TestCase
 
         // 模拟数据库返回查询未命中缓存的数据
         $this->conn->shouldReceive('select')
+            ->with('select * from "user" where "id" in (?)', [2], true)
             ->andReturn([
                 (object) [ 'id' => 2, 'name' => '涛涛', ],
             ]);
@@ -229,11 +259,6 @@ class ModelTest extends TestCase
      */
     public function testCachedAwfulGet()
     {
-        // 模拟数据库返回结果
-        $this->conn->shouldReceive('select')
-            ->andReturn([
-                (object) [ 'id' => 1, 'name' => '海涛', ],
-            ]);
         $this->cache->shouldReceive('get')
             ->with([
                 'a52d401e05fd1cc438bd070bc4c1c14f',
@@ -256,6 +281,7 @@ class ModelTest extends TestCase
     {
         // 模拟数据库返回结果
         $this->conn->shouldReceive('select')
+            ->with('select * from "user" where "status" = ? order by "id" desc', [1], true)
             ->andReturn([
                 (object) [ 'id' => 1, 'name' => '海涛', ],
             ]);
@@ -314,6 +340,7 @@ class ModelTest extends TestCase
     public function testPartialCachedNormalGet()
     {
         $this->conn->shouldReceive('select')
+            ->with('select * from "user" where "id" in (?)', [2], true)
             ->andReturn([
                 (object) [ 'id' => 2, 'name' => '涛涛', ],
             ]);
