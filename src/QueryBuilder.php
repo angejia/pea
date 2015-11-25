@@ -109,6 +109,7 @@ class QueryBuilder extends Builder
 
         // 根据主键查询结果
         $this->wheres = [];
+        $this->bindings['where'] = [];
         $this->limit = null;
         $this->offset = null;
         $this->whereIn($primaryKeyName, $ids);
