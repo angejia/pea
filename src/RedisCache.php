@@ -16,11 +16,19 @@ class RedisCache implements Cache
 
     public function get($keys)
     {
-        return array_combine($keys, $this->redis->mget($keys));
+        $keyValue = array_combine($keys, $this->redis->mget($keys));
+        $keyValue = array_filter($keyValue, function ($value) {
+            return $value;
+        });
+
+        return $keyValue;
     }
 
     public function set($keyValue)
     {
+        $keyValue = array_filter($keyValue, function ($value) {
+            return $value;
+        });
         return $this->redis->mset($keyValue);
     }
 

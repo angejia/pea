@@ -19,7 +19,7 @@ class CacheTest extends TestCase
 
         $cache = new RedisCache($redis);
         $result = $cache->get(['a', 'b']);
-        $this->assertEquals([ 'a' => 1, 'b' => null], $result);
+        $this->assertEquals([ 'a' => 1 ], $result);
     }
 
     public function testSet()
@@ -27,13 +27,12 @@ class CacheTest extends TestCase
         $redis = M::mock(Redis::class);
         $redis->shouldReceive('mset')->with([
             'a' => 1,
-            'b' => 2,
         ]);
 
         $cache = new RedisCache($redis);
         $cache->set([
             'a' => 1,
-            'b' => 2,
+            'b' => null,
         ]);
     }
 
