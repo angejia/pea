@@ -14,7 +14,7 @@ class CacheTest extends TestCase
             'b',
         ])->andReturn([
             1,
-            null,
+            "null",
         ]);
 
         $cache = new RedisCache($redis);
@@ -26,12 +26,12 @@ class CacheTest extends TestCase
     {
         $redis = M::mock(Redis::class);
         $redis->shouldReceive('mset')->with([
-            'a' => 1,
+            'a' => '[1,2]',
         ]);
 
         $cache = new RedisCache($redis);
         $cache->set([
-            'a' => 1,
+            'a' => [1, 2],
             'b' => null,
         ]);
     }

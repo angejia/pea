@@ -17,6 +17,9 @@ class RedisCache implements Cache
     public function get($keys)
     {
         $keyValue = array_combine($keys, $this->redis->mget($keys));
+        array_walk($keyValue, function (&$item) {
+            $item = json_decode($item);
+        });
         $keyValue = array_filter($keyValue, function ($value) {
             return $value;
         });
@@ -28,6 +31,9 @@ class RedisCache implements Cache
     {
         $keyValue = array_filter($keyValue, function ($value) {
             return $value;
+        });
+        array_walk($keyValue, function (&$item) {
+            $item = json_encode($item);
         });
         return $this->redis->mset($keyValue);
     }
