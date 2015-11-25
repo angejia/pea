@@ -223,6 +223,57 @@ class ModelTest extends TestCase
         $user = User::find(1);
         $user->delete();
     }
+
+    /**
+     * 复杂查询，命中缓存
+     */
+    public function testCachedAwfulGet()
+    {
+        // 模拟数据库返回结果
+        $this->conn->shouldReceive('select')
+            ->andReturn([
+                (object) [ 'id' => 1, 'name' => '海涛', ],
+            ]);
+        $this->cache->shouldReceive('get')
+            ->with([
+                'a52d401e05fd1cc438bd070bc4c1c14f',
+            ])
+            ->andReturn([
+                'a52d401e05fd1cc438bd070bc4c1c14f' => [
+                    (object) [ 'id' => 1, 'name' => '海涛', ],
+                ]
+            ]);
+
+        $users = User::where('status', 1)->orderBy('id', 'desc')->get();
+        $user0 = $users[0];
+        $this->assertEquals(1, $user0->id);
+    }
+
+    /**
+     * 复杂查询未命中缓存
+     */
+    public function testMissAwfulGet()
+    {
+        // 模拟数据库返回结果
+        $this->conn->shouldReceive('select')
+            ->andReturn([
+                (object) [ 'id' => 1, 'name' => '海涛', ],
+            ]);
+        // 模拟未命中缓存
+        $this->cache->shouldReceive('get')
+            ->with([
+                'a52d401e05fd1cc438bd070bc4c1c14f',
+            ])
+            ->andReturn([]);
+        // 模拟缓存查询结果
+        $this->cache->shouldReceive('set')
+            ->with([
+                'a52d401e05fd1cc438bd070bc4c1c14f' => [
+                    (object) [ 'id' => 1, 'name' => '海涛', ],
+                ]
+            ]);
+        $uers = User::where('status', 1)->orderBy('id', 'desc')->get();
+    }
 }
 
 class User extends Model
