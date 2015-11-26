@@ -7,7 +7,7 @@ interface Meta
      *
      * @param string $db 数据库名称
      * @param string $table 表名
-     * @param bool $isForRow 是否需要获取表级缓存前缀
+     * @param bool $isForTable 是否需要获取表级缓存前缀
      *
      * @return string 前缀字符串
      */
@@ -25,8 +25,8 @@ interface Meta
      * 刷新所有缓存，调用此方法让所有缓存过期。
      * 仅用于执行 Migration 以后调用
      *
+     * @param string $db 数据库名称
      * @param string $table 表名
-     * @param string $primaryKey 主键名称
      */
     function flushAll($db, $table);
 }
