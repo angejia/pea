@@ -407,9 +407,16 @@ class ModelTest extends TestCase
 
     public function testQueryCacheKey()
     {
+        // 简单查询
         $key = User::where('id', 1)->key();
-        $this->assertEquals([1 => "3558193cd9818af7fe4d2c2f5bd9d00f" ], $key);
+        $this->assertEquals([1 => '3558193cd9818af7fe4d2c2f5bd9d00f' ], $key);
+        $key = User::whereIn('id', [1, 2])->key();
+        $this->assertEquals([
+            1 => '3558193cd9818af7fe4d2c2f5bd9d00f',
+            2 => '343a10e6c2480e111dd3e9e564eb7966',
+        ], $key);
 
+        // 复杂查询
         $key = User::where('id', 2)->orderBy('id', 'desc')->key();
         $this->assertEquals('791b4459a33f6b3d4929b5b7ea9de084', $key);
     }
