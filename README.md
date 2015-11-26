@@ -1,4 +1,5 @@
 # pea
+[![Build Status](https://travis-ci.org/angejia/pea.svg?branch=master)](https://travis-ci.org/angejia/pea)
 
 Laravel Eloquent 的缓存层。
 
