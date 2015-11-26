@@ -350,4 +350,12 @@ class QueryBuilder extends Builder
             return "[Normal Query is not supported!]";
         }
     }
+
+    /**
+     * 过期当前表所有缓存
+     */
+    public function flush()
+    {
+        $this->getMeta()->flushAll($this->db(), $this->model->table());
+    }
 }

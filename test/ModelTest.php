@@ -405,6 +405,9 @@ class ModelTest extends TestCase
         $this->assertEquals(0, count($users));
     }
 
+    /**
+     * 获取当前查询缓存 key
+     */
     public function testQueryCacheKey()
     {
         // 简单查询
@@ -419,6 +422,16 @@ class ModelTest extends TestCase
         // 复杂查询
         $key = User::where('id', 2)->orderBy('id', 'desc')->key();
         $this->assertEquals('791b4459a33f6b3d4929b5b7ea9de084', $key);
+    }
+
+    /**
+     * 刷新当前表所有缓存
+     */
+    public function testFlushCache()
+    {
+        $this->meta->shouldReceive('flushAll')->with('angejia', 'user');
+
+        User::flush();
     }
 }
 

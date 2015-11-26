@@ -38,8 +38,13 @@ abstract class Model extends EloquentModel
     public function newEloquentBuilder($query)
     {
         $builder = new Builder($query);
+
         $builder->macro('key', function (Builder $builder) {
             return $builder->getQuery()->key();
+        });
+
+        $builder->macro('flush', function (Builder $builder) {
+            return $builder->getQuery()->flush();
         });
 
         return $builder;
