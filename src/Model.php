@@ -1,6 +1,7 @@
 <?php namespace Angejia\Pea;
 
 use Illuminate\Database\Eloquent\Model as EloquentModel;
+use Illuminate\Database\Eloquent\Builder;
 
 abstract class Model extends EloquentModel
 {
@@ -32,5 +33,15 @@ abstract class Model extends EloquentModel
         $queryBuilder->setModel($this);
 
         return $queryBuilder;
+    }
+
+    public function newEloquentBuilder($query)
+    {
+        $builder = new Builder($query);
+        $builder->macro('key', function (Builder $builder) {
+            return $builder->getQuery()->key();
+        });
+
+        return $builder;
     }
 }

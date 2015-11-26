@@ -54,7 +54,7 @@ class QueryBuilder extends Builder
 
     private function getAwful($columns)
     {
-        $key = $this->buildTableCacheKey($this->toSql(), $this->getBindings());
+        $key = $this->buildAwfulCacheKey();
         $cache = $this->getCache();
         $result = $cache->get([$key]);
         if (array_key_exists($key, $result)) {
@@ -67,6 +67,11 @@ class QueryBuilder extends Builder
         ]);
 
         return $result;
+    }
+
+    private function buildAwfulCacheKey()
+    {
+        return $this->buildTableCacheKey($this->toSql(), $this->getBindings());
     }
 
     /**
@@ -328,5 +333,21 @@ class QueryBuilder extends Builder
         ];
 
         return md5(implode(':', $parts));
+    }
+
+    /**
+     * 返回查询对应的缓存 key
+     *
+     * 仅供调试使用！
+     */
+    public function key()
+    {
+        if ($this->isSimple()) {
+            return $this->buildCacheKeys();
+        } elseif ($this->isAwful()) {
+            return $this->buildAwfulCacheKey();
+        } else {
+            return "[Normal Query is not supported!]";
+        }
     }
 }
