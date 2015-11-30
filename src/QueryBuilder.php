@@ -2,6 +2,7 @@
 
 use Illuminate\Database\Query\Builder;
 use Illuminate\Container\Container;
+use Illuminate\Contracts\Events\Dispatcher;
 
 class QueryBuilder extends Builder
 {
@@ -58,8 +59,11 @@ class QueryBuilder extends Builder
         $cache = $this->getCache();
         $result = $cache->get([$key]);
         if (array_key_exists($key, $result)) {
+            $this->fileEvent('hit.awful');
             return $result[$key];
         }
+
+        $this->fileEvent('miss.awful');
 
         $result = parent::get($columns);
         $cache->set([
@@ -156,7 +160,17 @@ class QueryBuilder extends Builder
 
         $missedIds = array_keys($cacheKeys);
         if (!$missedIds) {
+            $this->fileEvent('hit.simple.1000');
             return $cachedRows;
+        }
+
+        if (count($cachedRows) === 0) {
+            $this->fileEvent('miss.simple');
+        } else {
+            $cachedNum = count($cachedRows);
+            $missedNum = count($missedIds);
+            $percent = (int)($cachedNum / ($cachedNum + $missedNum) * 1000);
+            $this->fileEvent('hit.simple.' . $percent);
         }
 
         $originWheres = $this->wheres;
@@ -357,5 +371,20 @@ class QueryBuilder extends Builder
     public function flush()
     {
         $this->getMeta()->flushAll($this->db(), $this->model->table());
+    }
+
+    private function fileEvent($name, $data = [])
+    {
+        /** @var $container Container */
+        $container = Container::getInstance();
+        if (!$container->bound(Dispatcher::class)) {
+            return;
+        }
+
+        $data['table'] = $this->model->table();
+        $data['db'] = $this->db();
+
+        $event = 'angejia.pea.' . $name;
+        Container::getInstance()->make(Dispatcher::class)->fire($event, $data);
     }
 }

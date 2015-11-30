@@ -8,6 +8,7 @@ use Illuminate\Database\ConnectionInterface;
 use Illuminate\Database\Query\Grammars\Grammar;
 use Illuminate\Database\Query\Processors\Processor;
 use Illuminate\Database\ConnectionResolverInterface;
+use Illuminate\Contracts\Events\Dispatcher;
 
 class ModelTest extends TestCase
 {
@@ -83,6 +84,9 @@ class ModelTest extends TestCase
                 '3558193cd9818af7fe4d2c2f5bd9d00f' => (object) [ 'id' => 1, 'name' => '海涛', ],
             ]);
 
+        $dispatcher = M::Mock(Dispatcher::class);
+        $dispatcher->shouldReceive('fire')->with('angejia.pea.hit.simple.1000', ['table' => 'user', 'db' => 'angejia']);
+        $this->app->instance(Dispatcher::class, $dispatcher);
 
         // 查询 id 为 1 的记录，应该命中缓存
         $u1 = User::find(1);
@@ -113,6 +117,10 @@ class ModelTest extends TestCase
             // 模拟全部没有命中缓存
             ->andReturn([]);
 
+        $dispatcher = M::Mock(Dispatcher::class);
+        $dispatcher->shouldReceive('fire')->with('angejia.pea.miss.simple', ['table' => 'user', 'db' => 'angejia']);
+        $this->app->instance(Dispatcher::class, $dispatcher);
+
         // 查询 id 为 1 的记录，应该命中缓存
         $u1 = User::find(1);
 
@@ -132,6 +140,10 @@ class ModelTest extends TestCase
                 '3558193cd9818af7fe4d2c2f5bd9d00f' => (object) [ 'id' => 1, 'name' => '海涛', ],
                 '343a10e6c2480e111dd3e9e564eb7966' => (object) [ 'id' => 2, 'name' => '涛涛', ],
             ]);
+
+        $dispatcher = M::Mock(Dispatcher::class);
+        $dispatcher->shouldReceive('fire')->with('angejia.pea.hit.simple.1000', ['table' => 'user', 'db' => 'angejia']);
+        $this->app->instance(Dispatcher::class, $dispatcher);
 
 
         // 查询 id 为 1 和 2 的记录，应该全部命中缓存
@@ -166,6 +178,10 @@ class ModelTest extends TestCase
             ->with([
                 '343a10e6c2480e111dd3e9e564eb7966' => (object) [ 'id' => 2, 'name' => '涛涛', ],
             ]);
+
+        $dispatcher = M::Mock(Dispatcher::class);
+        $dispatcher->shouldReceive('fire')->with('angejia.pea.hit.simple.500', ['table' => 'user', 'db' => 'angejia']);
+        $this->app->instance(Dispatcher::class, $dispatcher);
 
         list($u1, $u2) = User::find([1, 2]);
 
@@ -269,6 +285,10 @@ class ModelTest extends TestCase
                 ]
             ]);
 
+        $dispatcher = M::Mock(Dispatcher::class);
+        $dispatcher->shouldReceive('fire')->with('angejia.pea.hit.awful', ['table' => 'user', 'db' => 'angejia']);
+        $this->app->instance(Dispatcher::class, $dispatcher);
+
         $users = User::where('status', 1)->orderBy('id', 'desc')->get();
         $user0 = $users[0];
         $this->assertEquals(1, $user0->id);
@@ -298,6 +318,11 @@ class ModelTest extends TestCase
                     (object) [ 'id' => 1, 'name' => '海涛', ],
                 ]
             ]);
+
+        $dispatcher = M::Mock(Dispatcher::class);
+        $dispatcher->shouldReceive('fire')->with('angejia.pea.miss.awful', ['table' => 'user', 'db' => 'angejia']);
+        $this->app->instance(Dispatcher::class, $dispatcher);
+
         $uers = User::where('status', 1)->orderBy('id', 'desc')->get();
     }
 
