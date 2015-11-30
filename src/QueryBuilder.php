@@ -99,6 +99,7 @@ class QueryBuilder extends Builder
             or $this->joins
             or $this->orders
             or $this->unions
+            or !$this->wheres
             or array_key_exists('Exists', $this->wheres)
             or array_key_exists('InSub', $this->wheres)
             or array_key_exists('NotExists', $this->wheres)

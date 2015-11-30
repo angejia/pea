@@ -1,6 +1,6 @@
 <?php namespace Angejia\Pea;
 
-use Illuminate\Contracts\Redis\Database as Redis;
+use Predis\Client as Redis;
 
 class RedisMeta implements Meta
 {

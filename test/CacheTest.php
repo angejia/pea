@@ -1,7 +1,7 @@
 <?php namespace Angejia\Pea;
 
 use Mockery as M;
-use Illuminate\Contracts\Redis\Database as Redis;
+use Predis\Client as Redis;
 use Angejia\Pea\RedisCache;
 
 class CacheTest extends TestCase
