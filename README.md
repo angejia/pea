@@ -28,5 +28,7 @@ class UserModel extends \Angejia\Pea\Model
 }
 ```
 
+如果你有专门的 Redis 缓存实例，可以通过`config/database.php`指定。具体参见[wiki](../../wiki/Laravel-配置)。
+
 ---
 [安个家](http://www.angejia.com/)出品。
