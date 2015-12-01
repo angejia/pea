@@ -29,14 +29,16 @@ class RedisCache implements Cache
 
     public function set($keyValue)
     {
-        $keyValue = array_filter($keyValue, function ($value) {
-            return !is_null($value);
-        });
-        array_walk($keyValue, function (&$item) {
-            $item = json_encode($item);
-        });
+        $pipe = $this->redis->pipeline();
 
-        return $this->redis->mset($keyValue);
+        foreach ($keyValue as $key => $value) {
+            if (!is_null($value)) {
+                $value = json_encode($value);
+                $pipe->setex($key, 86400, $value); // 缓存 1 天
+            }
+        }
+
+        return $pipe->execute();
     }
 
     public function del($keys)

@@ -27,10 +27,11 @@ class CacheTest extends TestCase
     public function testSet()
     {
         $redis = M::mock(Redis::class);
-        $redis->shouldReceive('mset')->with([
-            'a' => '[1,2]',
-            'c' => '[]',
-        ]);
+        $pipe = M::mock('pipe');
+        $pipe->shouldReceive('setex')->with('a', 86400, '[1,2]');
+        $pipe->shouldReceive('setex')->with('c', 86400, '[]');
+        $pipe->shouldReceive('execute');
+        $redis->shouldReceive('pipeline')->andReturn($pipe);
 
         $cache = new RedisCache($redis);
         $cache->set([
