@@ -13,6 +13,11 @@ class QueryBuilder extends Builder
 
     private function needCache()
     {
+        // TODO 如果没有设置 model,则认为不用处理缓存逻辑
+        if (!$this->model) {
+            return false;
+        }
+
         return $this->model->needCache();
     }
 
