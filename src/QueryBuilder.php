@@ -128,12 +128,22 @@ class QueryBuilder extends Builder
         }
 
         // 根据主键查询结果
+        $originWheres = $this->wheres;
+        $originWhereBindings = $this->bindings['where'];
+        $originLimit = $this->limit;
+        $originOffset = $this->offset;
+
         $this->wheres = [];
         $this->bindings['where'] = [];
         $this->limit = null;
         $this->offset = null;
         $this->whereIn($primaryKeyName, $ids);
         $rows = $this->getSimple($columns);
+
+        $this->wheres = $originWheres;
+        $this->bindings['where'] = $originWhereBindings;
+        $this->limit = $originLimit;
+        $this->offset = $originOffset;
 
         return $rows;
     }
@@ -180,12 +190,14 @@ class QueryBuilder extends Builder
         }
 
         $originWheres = $this->wheres;
+        $originWhereBindings = $this->bindings['where'];
         $this->wheres = [];
         $this->bindings['where'] = [];
         $this->whereIn($primaryKeyName, $missedIds);
 
         $missedRows = parent::get($columns);
         $this->wheres = $originWheres;
+        $this->bindings['where'] = $originWhereBindings;
 
         $toCachRows = [];
         foreach ($missedRows as $row) {
