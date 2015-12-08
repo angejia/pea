@@ -28,8 +28,8 @@ class CacheTest extends TestCase
     {
         $redis = M::mock(Redis::class);
         $pipe = M::mock('pipe');
-        $pipe->shouldReceive('setex')->with('a', 86400, '[1,2]');
-        $pipe->shouldReceive('setex')->with('c', 86400, '[]');
+        $pipe->shouldReceive('setex')->with('a', 600, '[1,2]');
+        $pipe->shouldReceive('setex')->with('c', 600, '[]');
         $pipe->shouldReceive('execute');
         $redis->shouldReceive('pipeline')->andReturn($pipe);
 
