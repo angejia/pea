@@ -34,7 +34,7 @@ class RedisCache implements Cache
         foreach ($keyValue as $key => $value) {
             if (!is_null($value)) {
                 $value = json_encode($value);
-                $pipe->setex($key, 600, $value); // 缓存 10 分钟
+                $pipe->setex($key, 86400, $value); // 缓存 1 天
             }
         }
 
