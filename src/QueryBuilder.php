@@ -60,6 +60,8 @@ class QueryBuilder extends Builder
 
     private function getAwful($columns)
     {
+        $this->fileEvent('get.awful');
+
         $key = $this->buildAwfulCacheKey();
         $cache = $this->getCache();
         $result = $cache->get([$key]);
@@ -115,6 +117,8 @@ class QueryBuilder extends Builder
 
     private function getNormal($columns)
     {
+        $this->fileEvent('get.normal');
+
         $primaryKeyName = $this->model->primaryKey();
         // 查询主键列表
         $rows = $this->getAwful([$primaryKeyName]);
@@ -163,6 +167,8 @@ class QueryBuilder extends Builder
      */
     private function getSimple($columns)
     {
+        $this->fileEvent('get.simple');
+
         $primaryKeyName = $this->model->primaryKey();
         $cacheKeys = $this->buildCacheKeys();
 
