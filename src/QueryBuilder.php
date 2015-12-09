@@ -49,10 +49,12 @@ class QueryBuilder extends Builder
             return parent::get($columns);
         }
 
+        $columns = ['*'];
+
         if ($this->isAwful()) {
             return $this->getAwful($columns);
         } elseif ($this->isNormal()) {
-            return $this->getNormal($columns);
+            return $this->getAwful($columns);
         } else {
             return $this->getSimple($columns);
         }
