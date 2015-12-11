@@ -1,7 +1,15 @@
 <?php namespace Angejia\Pea;
 
+use Illuminate\Foundation\AliasLoader;
+
 class ServiceProvider extends \Illuminate\Support\ServiceProvider
 {
+    public function boot()
+    {
+        $loader = AliasLoader::getInstance();
+        $loader->alias('Schema', SchemaFacade::class);
+    }
+
     public function register()
     {
         // TODO 缓存 redis 实例可以配置
