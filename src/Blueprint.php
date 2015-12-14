@@ -13,7 +13,14 @@ class Blueprint extends Base
 
     public function build(Connection $connection, Grammar $grammar)
     {
-        parent::build($connection, $grammar);
+        $statements = $this->toSql($connection, $grammar);
+        if (!$statements) {
+            throw new \RuntimeException('migration must be created with Blueprint');
+        }
+
+        foreach ($this->toSql($connection, $grammar) as $statement) {
+            $connection->statement($statement);
+        }
 
         $db = $connection->getDatabaseName();
         $table = $this->getTable();
