@@ -18,7 +18,9 @@ class Blueprint extends Base
             throw new \RuntimeException('migration must be created with Blueprint');
         }
 
-        foreach ($this->toSql($connection, $grammar) as $statement) {
+        $statements = $this->toSql($connection, $grammar);
+
+        foreach ($statements as $statement) {
             $connection->statement($statement);
         }
 
