@@ -66,11 +66,11 @@ class QueryBuilder extends Builder
         $cache = $this->getCache();
         $result = $cache->get([$key]);
         if (array_key_exists($key, $result)) {
-            $this->fileEvent('hit.awful');
+            $this->fireEvent('hit.awful');
             return $result[$key];
         }
 
-        $this->fileEvent('miss.awful');
+        $this->fireEvent('miss.awful');
 
         $result = parent::get($columns);
         $cache->set([
@@ -178,17 +178,17 @@ class QueryBuilder extends Builder
 
         $missedIds = array_keys($cacheKeys);
         if (!$missedIds) {
-            $this->fileEvent('hit.simple.1000');
+            $this->fireEvent('hit.simple.1000');
             return $cachedRows;
         }
 
         if (count($cachedRows) === 0) {
-            $this->fileEvent('miss.simple');
+            $this->fireEvent('miss.simple');
         } else {
             $cachedNum = count($cachedRows);
             $missedNum = count($missedIds);
             $percent = (int)($cachedNum / ($cachedNum + $missedNum) * 1000);
-            $this->fileEvent('hit.simple.' . $percent);
+            $this->fireEvent('hit.simple.' . $percent);
         }
 
         $originWheres = $this->wheres;
@@ -393,7 +393,7 @@ class QueryBuilder extends Builder
         $this->getMeta()->flushAll($this->db(), $this->model->table());
     }
 
-    private function fileEvent($name, $data = [])
+    private function fireEvent($name, $data = [])
     {
         /** @var $container Container */
         $container = Container::getInstance();
