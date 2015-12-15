@@ -85,6 +85,7 @@ class ModelTest extends TestCase
             ]);
 
         $dispatcher = M::Mock(Dispatcher::class);
+        $dispatcher->shouldReceive('fire')->with('angejia.pea.get', ['table' => 'user', 'db' => 'angejia']);
         $dispatcher->shouldReceive('fire')->with('angejia.pea.hit.simple.1000', ['table' => 'user', 'db' => 'angejia']);
         $this->app->instance(Dispatcher::class, $dispatcher);
 
@@ -118,6 +119,7 @@ class ModelTest extends TestCase
             ->andReturn([]);
 
         $dispatcher = M::Mock(Dispatcher::class);
+        $dispatcher->shouldReceive('fire')->with('angejia.pea.get', ['table' => 'user', 'db' => 'angejia']);
         $dispatcher->shouldReceive('fire')->with('angejia.pea.miss.simple', ['table' => 'user', 'db' => 'angejia']);
         $this->app->instance(Dispatcher::class, $dispatcher);
 
@@ -142,6 +144,7 @@ class ModelTest extends TestCase
             ]);
 
         $dispatcher = M::Mock(Dispatcher::class);
+        $dispatcher->shouldReceive('fire')->with('angejia.pea.get', ['table' => 'user', 'db' => 'angejia']);
         $dispatcher->shouldReceive('fire')->with('angejia.pea.hit.simple.1000', ['table' => 'user', 'db' => 'angejia']);
         $this->app->instance(Dispatcher::class, $dispatcher);
 
@@ -180,6 +183,7 @@ class ModelTest extends TestCase
             ]);
 
         $dispatcher = M::Mock(Dispatcher::class);
+        $dispatcher->shouldReceive('fire')->with('angejia.pea.get', ['table' => 'user', 'db' => 'angejia']);
         $dispatcher->shouldReceive('fire')->with('angejia.pea.hit.simple.500', ['table' => 'user', 'db' => 'angejia']);
         $this->app->instance(Dispatcher::class, $dispatcher);
 
@@ -286,6 +290,7 @@ class ModelTest extends TestCase
             ]);
 
         $dispatcher = M::Mock(Dispatcher::class);
+        $dispatcher->shouldReceive('fire')->with('angejia.pea.get', ['table' => 'user', 'db' => 'angejia']);
         $dispatcher->shouldReceive('fire')->with('angejia.pea.hit.awful', ['table' => 'user', 'db' => 'angejia']);
         $this->app->instance(Dispatcher::class, $dispatcher);
 
@@ -320,6 +325,7 @@ class ModelTest extends TestCase
             ]);
 
         $dispatcher = M::Mock(Dispatcher::class);
+        $dispatcher->shouldReceive('fire')->with('angejia.pea.get', ['table' => 'user', 'db' => 'angejia']);
         $dispatcher->shouldReceive('fire')->with('angejia.pea.miss.awful', ['table' => 'user', 'db' => 'angejia']);
         $this->app->instance(Dispatcher::class, $dispatcher);
 

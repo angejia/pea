@@ -44,6 +44,8 @@ class QueryBuilder extends Builder
 
     public function get($columns = ['*'])
     {
+        $this->fireEvent('get');
+
         if (!$this->needCache())
         {
             return parent::get($columns);
