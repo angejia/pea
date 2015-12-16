@@ -206,8 +206,12 @@ class QueryBuilder extends Builder
         $this->bindings['where'] = $originWhereBindings;
 
         $toCachRows = [];
+        $toCachIds = array_map(function ($row) use($primaryKeyName) {
+            return $row->$primaryKeyName;
+        }, $missedRows);
+        $toCachKeys = $this->buildRowCacheKey($toCachIds);
         foreach ($missedRows as $row) {
-            $toCachRows[$cacheKeys[$row->$primaryKeyName]] = $row;
+            $toCachRows[$toCachKeys[$row->$primaryKeyName]] = $row;
         }
         if ($toCachRows) {
             $cache->set($toCachRows);

@@ -193,6 +193,42 @@ class ModelTest extends TestCase
         $this->assertEquals('涛涛', $u2->name);
     }
 
+    public function testAllMissedSimpleGet()
+    {
+        $this->cache->shouldReceive('get')
+            ->with([
+                '3558193cd9818af7fe4d2c2f5bd9d00f',
+                '343a10e6c2480e111dd3e9e564eb7966',
+            ])
+            // 缓存中只有 id 为 1 的数据
+            ->andReturn([]);
+
+        // 模拟数据库返回查询未命中缓存的数据
+        $this->conn->shouldReceive('select')
+            ->with('select * from "user" where "id" in (?, ?)', [1, 2], true)
+            ->andReturn([
+                (object) [ 'id' => 1, 'name' => '海涛', ],
+                (object) [ 'id' => 2, 'name' => '涛涛', ],
+            ]);
+
+        // 查询完成后需要将数据写入缓存
+        $this->cache->shouldReceive('set')
+            ->with([
+                '343a10e6c2480e111dd3e9e564eb7966' => (object) [ 'id' => 2, 'name' => '涛涛', ],
+                '3558193cd9818af7fe4d2c2f5bd9d00f' => (object) [ 'id' => 1, 'name' => '海涛', ],
+            ]);
+
+        $dispatcher = M::Mock(Dispatcher::class);
+        $dispatcher->shouldReceive('fire')->with('angejia.pea.get', ['table' => 'user', 'db' => 'angejia']);
+        $dispatcher->shouldReceive('fire')->with('angejia.pea.miss.simple', ['table' => 'user', 'db' => 'angejia']);
+        $this->app->instance(Dispatcher::class, $dispatcher);
+
+        list($u1, $u2) = User::find([1, 2]);
+
+        $this->assertEquals('海涛', $u1->name);
+        $this->assertEquals('涛涛', $u2->name);
+    }
+
     public function testFlushCacheForInsert()
     {
         $pdo = M::mock('\PDO');
