@@ -3,6 +3,7 @@
 use Illuminate\Database\Query\Builder;
 use Illuminate\Container\Container;
 use Illuminate\Contracts\Events\Dispatcher;
+use Illuminate\Database\Query\Expression;
 
 class QueryBuilder extends Builder
 {
@@ -104,6 +105,14 @@ class QueryBuilder extends Builder
      */
     private function isAwful()
     {
+        if ($this->columns) {
+            foreach ($this->columns as $column) {
+                if ($column instanceof Expression) {
+                    return true;
+                }
+            }
+        }
+
         return $this->aggregate
             or $this->distinct
             or $this->groups

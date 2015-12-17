@@ -9,6 +9,7 @@ use Illuminate\Database\Query\Grammars\Grammar;
 use Illuminate\Database\Query\Processors\Processor;
 use Illuminate\Database\ConnectionResolverInterface;
 use Illuminate\Contracts\Events\Dispatcher;
+use Illuminate\Database\Query\Expression;
 
 class ModelTest extends TestCase
 {
@@ -366,6 +367,40 @@ class ModelTest extends TestCase
         $this->app->instance(Dispatcher::class, $dispatcher);
 
         $uers = User::where('status', 1)->orderBy('id', 'desc')->get();
+    }
+
+    /**
+     * 复杂查询未命中缓存
+     */
+    public function testRawAwfulGet()
+    {
+        // 模拟数据库返回结果
+        $this->conn->shouldReceive('select')
+            ->with('select count(*) from "user" where "id" = ?', [1], true)
+            ->andReturn([
+                (object) ["count(*)" => 1],
+            ]);
+        // 模拟未命中缓存
+        $this->cache->shouldReceive('get')
+            ->with([
+                '122a32ae3f8656ba95b87700de71506c',
+            ])
+            ->andReturn([]);
+        // 模拟缓存查询结果
+        $this->cache->shouldReceive('set')
+            ->with([
+                '122a32ae3f8656ba95b87700de71506c' => [
+                    (object) ["count(*)" => 1],
+                ]
+            ]);
+
+        $dispatcher = M::Mock(Dispatcher::class);
+        $dispatcher->shouldReceive('fire')->with('angejia.pea.get', ['table' => 'user', 'db' => 'angejia']);
+        $dispatcher->shouldReceive('fire')->with('angejia.pea.miss.awful', ['table' => 'user', 'db' => 'angejia']);
+        $this->app->instance(Dispatcher::class, $dispatcher);
+
+        $data = User::where('id', 1)->select(new Expression('count(*)'))->get();
+        $this->assertEquals(1, $data[0]['count(*)']);
     }
 
     /**
