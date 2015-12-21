@@ -398,7 +398,7 @@ class QueryBuilder extends Builder
         } elseif ($this->isAwful()) {
             return $this->buildAwfulCacheKey();
         } else {
-            return "[Normal Query is not supported!]";
+            return $this->buildAwfulCacheKey();
         }
     }
 
