@@ -54,18 +54,35 @@ class QueryBuilder extends Builder
             return parent::get($columns);
         }
 
-        $columns = ['*'];
+        if (!$this->columns && self::hasRawColumn($columns)) {
+            $this->columns = $columns;
+        }
 
         if ($this->isAwful()) {
-            return $this->getAwful($columns);
+            return $this->getAwful();
         } elseif ($this->isNormal()) {
-            return $this->getAwful($columns);
+            return $this->getAwful();
         } else {
-            return $this->getSimple($columns);
+            return $this->getSimple();
         }
     }
 
-    private function getAwful($columns)
+    private static function hasRawColumn($columns)
+    {
+        if (!$columns) {
+            return false;
+        }
+
+        foreach ($columns as $column) {
+            if ($column instanceof Expression) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    private function getAwful()
     {
         $key = $this->buildAwfulCacheKey();
         $cache = $this->getCache();
@@ -77,7 +94,7 @@ class QueryBuilder extends Builder
 
         $this->fireEvent('miss.awful');
 
-        $result = parent::get($columns);
+        $result = parent::get();
         $cache->set([
             $key => $result,
         ]);
@@ -105,12 +122,8 @@ class QueryBuilder extends Builder
      */
     private function isAwful()
     {
-        if ($this->columns) {
-            foreach ($this->columns as $column) {
-                if ($column instanceof Expression) {
-                    return true;
-                }
-            }
+        if (self::hasRawColumn($this->columns)) {
+            return true;
         }
 
         return $this->aggregate
@@ -128,7 +141,7 @@ class QueryBuilder extends Builder
             or array_key_exists('raw', $this->wheres);
     }
 
-    private function getNormal($columns)
+    private function getNormal()
     {
         $primaryKeyName = $this->model->primaryKey();
         // 查询主键列表
@@ -153,7 +166,7 @@ class QueryBuilder extends Builder
         $this->limit = null;
         $this->offset = null;
         $this->whereIn($primaryKeyName, $ids);
-        $rows = $this->getSimple($columns);
+        $rows = $this->getSimple();
 
         $this->wheres = $originWheres;
         $this->bindings['where'] = $originWhereBindings;
@@ -176,7 +189,7 @@ class QueryBuilder extends Builder
     /**
      * 简单查询，只根据主键过滤结果集
      */
-    private function getSimple($columns)
+    private function getSimple()
     {
         $primaryKeyName = $this->model->primaryKey();
         $cacheKeys = $this->buildCacheKeys();
@@ -206,13 +219,16 @@ class QueryBuilder extends Builder
 
         $originWheres = $this->wheres;
         $originWhereBindings = $this->bindings['where'];
+        $originColumns = $this->columns;
         $this->wheres = [];
         $this->bindings['where'] = [];
         $this->whereIn($primaryKeyName, $missedIds);
+        $this->columns = null;
 
-        $missedRows = parent::get($columns);
+        $missedRows = parent::get();
         $this->wheres = $originWheres;
         $this->bindings['where'] = $originWhereBindings;
+        $this->columns = $originColumns;
 
         $toCachRows = [];
         $toCachIds = array_map(function ($row) use($primaryKeyName) {
