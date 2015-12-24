@@ -16,6 +16,10 @@ class RedisCache implements Cache
 
     public function get($keys)
     {
+        if (!$keys) {
+            return [];
+        }
+
         $keyValue = array_combine($keys, $this->redis->mget($keys));
         array_walk($keyValue, function (&$item) {
             $item = json_decode($item);
