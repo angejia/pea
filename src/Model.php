@@ -5,11 +5,12 @@ use Illuminate\Database\Eloquent\Builder;
 
 abstract class Model extends EloquentModel
 {
+    protected static $enableCache = true;
     protected $needCache = false;
 
     public function needCache()
     {
-        return $this->needCache;
+        return $this->needCache && self::$enableCache;
     }
 
     public function primaryKey()
@@ -48,5 +49,10 @@ abstract class Model extends EloquentModel
         });
 
         return $builder;
+    }
+
+    public static function disableCache()
+    {
+        self::$enableCache = false;
     }
 }
