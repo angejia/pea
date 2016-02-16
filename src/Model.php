@@ -5,12 +5,20 @@ use Illuminate\Database\Eloquent\Builder;
 
 abstract class Model extends EloquentModel
 {
-    protected static $enableCache = true;
+    protected static $disableReadCache = false;
     protected $needCache = false;
 
     public function needCache()
     {
-        return $this->needCache && self::$enableCache;
+        return $this->needCache && !self::$disableReadCache;
+    }
+
+    /**
+     * 判断更新数据库的时候是否需要更新缓存
+     */
+    public function needFlushCache()
+    {
+        return $this->needCache;
     }
 
     public function primaryKey()
@@ -51,8 +59,11 @@ abstract class Model extends EloquentModel
         return $builder;
     }
 
-    public static function disableCache()
+    /**
+     * 关闭查询数据库的时候读取缓存的逻辑（更新数据库的时候还会更新缓存）
+     */
+    public static function disableReadCache()
     {
-        self::$enableCache = false;
+        self::$disableReadCache = true;
     }
 }

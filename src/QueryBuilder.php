@@ -22,6 +22,16 @@ class QueryBuilder extends Builder
         return $this->model->needCache();
     }
 
+    private function needFlushCache()
+    {
+        // TODO 如果没有设置 model,则认为不用处理缓存逻辑
+        if (!$this->model) {
+            return false;
+        }
+
+        return $this->model->needFlushCache();
+    }
+
     public function setModel(Model $model)
     {
         $this->model = $model;
@@ -301,7 +311,7 @@ class QueryBuilder extends Builder
 
     public function delete($id = null)
     {
-        if ($this->needCache()) {
+        if ($this->needFlushCache()) {
             // 清空表级缓存
             $meta = $this->getMeta();
             $meta->flush($this->db(), $this->model->table());
@@ -331,7 +341,7 @@ class QueryBuilder extends Builder
 
     public function update(array $values)
     {
-        if ($this->needCache()) {
+        if ($this->needFlushCache()) {
             // 清空表级缓存
             $meta = $this->getMeta();
             $meta->flush($this->db(), $this->model->table());
@@ -343,7 +353,7 @@ class QueryBuilder extends Builder
 
     public function insert(array $values)
     {
-        if ($this->needCache()) {
+        if ($this->needFlushCache()) {
             // 清空表级缓存
             $meta = $this->getMeta();
             $meta->flush($this->db(), $this->model->table());
@@ -354,7 +364,7 @@ class QueryBuilder extends Builder
 
     public function insertGetId(array $values, $sequence = null)
     {
-        if ($this->needCache()) {
+        if ($this->needFlushCache()) {
             // 清空表级缓存
             $meta = $this->getMeta();
             $meta->flush($this->db(), $this->model->table());
