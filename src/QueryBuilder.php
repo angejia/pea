@@ -366,17 +366,17 @@ class QueryBuilder extends Builder
             // 清空表级缓存
             $meta = $this->getMeta();
             $meta->flush($this->db(), $this->model->table());
-        }
 
-        if (! is_array(reset($values))) {
-            $values = [$values];
+            if (! is_array(reset($values))) {
+                $values = [$values];
+            }
+            $toClearIds = [];
+            foreach ($values as $value) {
+                $toClearIds[] = $value[$this->model->primaryKey()];
+            }
+            $toClearKeys = $this->buildRowCacheKey($toClearIds);
+            $this->getCache()->del(array_values($toClearKeys));
         }
-        $toClearIds = [];
-        foreach ($values as $value) {
-            $toClearIds[] = $value[$this->model->primaryKey()];
-        }
-        $toClearKeys = $this->buildRowCacheKey($toClearIds);
-        $this->getCache()->del(array_values($toClearKeys));
 
         return parent::insert($values);
     }
@@ -390,8 +390,11 @@ class QueryBuilder extends Builder
         }
 
         $id = parent::insertGetId($values, $sequence);
-        $key = $this->buildRowCacheKey([$id])[$id];
-        $this->getCache()->del([$key]);
+
+        if ($this->needFlushCache()) {
+            $key = $this->buildRowCacheKey([$id])[$id];
+            $this->getCache()->del([$key]);
+        }
 
         return $id;
     }
