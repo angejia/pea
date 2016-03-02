@@ -1,6 +1,7 @@
 <?php namespace Angejia\Pea;
 
 use Mockery as M;
+use Mockery\MockInterface;
 use Angejia\Pea\Cache;
 use Angejia\Pea\Meta;
 use Illuminate\Container\Container;
@@ -13,6 +14,21 @@ use Illuminate\Database\Query\Expression;
 
 class ModelTest extends TestCase
 {
+    /**
+     * @var MockInterface
+     */
+    private $meta;
+
+    /**
+     * @var MockInterface
+     */
+    private $conn;
+
+    /**
+     * @var MockInterface
+     */
+    private $cache;
+
     public function setUp()
     {
         parent::setUp();
@@ -241,10 +257,36 @@ class ModelTest extends TestCase
         // 模拟刷新表级缓存
         $this->meta->shouldReceive('flush')->with('angejia', 'user');
 
+        $this->cache->shouldReceive('del')->with([
+            '3558193cd9818af7fe4d2c2f5bd9d00f',
+        ]);
+
         $user = new User;
         $user->name = '海涛';
         $user->save();
         $this->assertEquals(1, $user->id);
+    }
+
+    public function testFlushCacheForBatchInsert()
+    {
+        $pdo = M::mock('\PDO');
+        // 模拟数据库返回自增主键 ID
+        $pdo->shouldReceive('lastInsertId')->andReturn(1);
+        $this->conn->shouldReceive('getPdo')->andReturn($pdo);
+        $this->conn->shouldReceive('insert');
+
+        // 模拟刷新表级缓存
+        $this->meta->shouldReceive('flush')->with('angejia', 'user');
+
+        $this->cache->shouldReceive('del')->with([
+            '3558193cd9818af7fe4d2c2f5bd9d00f',
+            '343a10e6c2480e111dd3e9e564eb7966',
+        ]);
+
+        User::insert([
+            ['id' => 1, 'name' => '海涛'],
+            ['id' => 2, 'name' => 'haitao'],
+        ]);
     }
 
     public function testFlushCacheForUpdateOne()
@@ -535,10 +577,55 @@ class ModelTest extends TestCase
 
         User::flush();
     }
+    public function testEmptySimpleGet()
+    {
+        // 模拟获取主键列表，返回空结果
+        $this->conn->shouldReceive('select')
+            ->with('select * from "user" where "id" in (?, ?)', [1, 2], true)
+            ->andReturn([
+                (object) ['id' => 2, 'name' => '海涛'],
+            ]);
+
+        // 查询完成后需要将数据写入缓存
+        $this->cache->shouldReceive('set')
+            ->with([
+                '3558193cd9818af7fe4d2c2f5bd9d00f' => [],
+                '343a10e6c2480e111dd3e9e564eb7966' => (object) ['id' => 2, 'name' => '海涛'],
+            ]);
+
+        // 模拟未命中表级缓存
+        $this->cache->shouldReceive('get')
+            ->with([
+                '3558193cd9818af7fe4d2c2f5bd9d00f',
+                '343a10e6c2480e111dd3e9e564eb7966',
+            ])
+            ->andReturn([]);
+
+        $users = User::whereIn('id', [1, 2])->get();
+        $this->assertEquals(1, count($users));
+        $user = $users[0];
+        $this->assertEquals('海涛', $user->name);
+    }
+
+    public function testEmptySimpleHitGet()
+    {
+        // 模拟命中表级空缓存
+        $this->cache->shouldReceive('get')
+            ->with([
+                '3558193cd9818af7fe4d2c2f5bd9d00f',
+            ])
+            ->andReturn([
+                '3558193cd9818af7fe4d2c2f5bd9d00f' => [],
+            ]);
+
+        $users = User::where('id', 1)->get();
+        $this->assertEquals(0, count($users));
+    }
 }
 
 class User extends Model
 {
     protected $table = 'user';
     protected $needCache = true;
+    public $timestamps = false;
 }
