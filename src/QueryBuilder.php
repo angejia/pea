@@ -203,14 +203,18 @@ class QueryBuilder extends Builder
     {
         $primaryKeyName = $this->model->primaryKey();
         $cacheKeys = $this->buildCacheKeys();
+        $keyId = array_flip($cacheKeys);
 
         $cache = $this->getCache();
         $cachedRows = $cache->get(array_values($cacheKeys));
-        foreach ($cachedRows as $row) {
-            unset($cacheKeys[$row->$primaryKeyName]);
+        foreach ($cachedRows as $key => $row) {
+            unset($cacheKeys[$keyId[$key]]);
         }
+
         // TODO 如何处理顺序
-        $cachedRows = array_values($cachedRows);
+        $cachedRows = array_filter(array_values($cachedRows), function ($row) {
+            return $row !== [];
+        });
 
         $missedIds = array_keys($cacheKeys);
         if (!$missedIds) {
@@ -235,22 +239,27 @@ class QueryBuilder extends Builder
         $this->whereIn($primaryKeyName, $missedIds);
         $this->columns = null;
 
-        $missedRows = parent::get();
+        $missedRows = array_fill_keys($missedIds, []);
+        foreach (parent::get() as $row) {
+            $missedRows[$row->$primaryKeyName] = $row;
+        }
+
         $this->wheres = $originWheres;
         $this->bindings['where'] = $originWhereBindings;
         $this->columns = $originColumns;
 
         $toCachRows = [];
-        $toCachIds = array_map(function ($row) use($primaryKeyName) {
-            return $row->$primaryKeyName;
-        }, $missedRows);
+        $toCachIds = array_keys($missedRows);
         $toCachKeys = $this->buildRowCacheKey($toCachIds);
-        foreach ($missedRows as $row) {
-            $toCachRows[$toCachKeys[$row->$primaryKeyName]] = $row;
+        foreach ($missedRows as $id => $row) {
+            $toCachRows[$toCachKeys[$id]] = $row;
         }
         if ($toCachRows) {
             $cache->set($toCachRows);
         }
+        $missedRows = array_filter(array_values($missedRows), function ($row) {
+            return $row !== [];
+        });
 
         return array_merge($cachedRows, $missedRows);
     }
@@ -359,6 +368,16 @@ class QueryBuilder extends Builder
             $meta->flush($this->db(), $this->model->table());
         }
 
+        if (! is_array(reset($values))) {
+            $values = [$values];
+        }
+        $toClearIds = [];
+        foreach ($values as $value) {
+            $toClearIds[] = $value[$this->model->primaryKey()];
+        }
+        $toClearKeys = $this->buildRowCacheKey($toClearIds);
+        $this->getCache()->del(array_values($toClearKeys));
+
         return parent::insert($values);
     }
 
@@ -370,7 +389,11 @@ class QueryBuilder extends Builder
             $meta->flush($this->db(), $this->model->table());
         }
 
-        return parent::insertGetId($values, $sequence);
+        $id = parent::insertGetId($values, $sequence);
+        $key = $this->buildRowCacheKey([$id])[$id];
+        $this->getCache()->del([$key]);
+
+        return $id;
     }
 
     /**
