@@ -299,6 +299,10 @@ class QueryBuilder extends Builder
 
         $where = current($this->wheres);
 
+        if ($where['type'] === 'Nested') {
+            return false;
+        }
+
         $id = $this->model->primaryKey();
         $tableId = $this->model->table() . '.' . $this->model->primaryKey();
         if (!in_array($where['column'], [$id, $tableId])) {
