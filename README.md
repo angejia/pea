@@ -1,4 +1,6 @@
 # pea
+
+[![Join the chat at https://gitter.im/angejia/pea](https://badges.gitter.im/angejia/pea.svg)](https://gitter.im/angejia/pea?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
 [![Build Status](https://travis-ci.org/angejia/pea.svg?branch=master)](https://travis-ci.org/angejia/pea)
 
 Laravel Eloquent 的缓存层。
