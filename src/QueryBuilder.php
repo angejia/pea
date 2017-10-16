@@ -99,7 +99,7 @@ class QueryBuilder extends Builder
         $result = $cache->get([$key]);
         if (array_key_exists($key, $result)) {
             $this->fireEvent('hit.awful');
-            return $result[$key];
+            return collect($result[$key]);
         }
 
         $this->fireEvent('miss.awful');
